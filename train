@@ -1,4 +1,7 @@
 # train model
+from model import neural_network
+import tensorflow as tf
+import numpy as np
 
 def train_neural_network(x):
 	# use model defined in model.py
