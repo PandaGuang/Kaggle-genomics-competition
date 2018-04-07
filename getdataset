@@ -1,0 +1,43 @@
+# get dataset
+import csv
+import numpy as np
+
+def get_dataset():
+
+	
+	A = {
+		'A':-0.6,
+		'G':-0.2,
+		'C':0.2,
+		'T':0.6
+		}
+
+	with open('train.csv') as csvfile:
+		datareader = csv.DictReader(csvfile)
+		train_x = np.zeros((2000,14))
+		train_y = np.zeros(2000)
+		k=-1
+		for row in datareader:
+			k=k+1
+			temp = row['sequence']
+			t=[]
+			for item in temp:
+				t.append(A[item])
+			train_x[k,:] = t
+			train_y[k] = int(row['label'])
+
+	with open('test.csv') as csvfile:
+		datareader = csv.DictReader(csvfile)
+		test_x = np.zeros((2000,14))
+		test_id = np.zeros(2000)
+		k=-1
+		for row in datareader:
+			k=k+1
+			temp = row['sequence']
+			t=[]
+			for item in temp:
+				t.append(A[item])
+			test_x[k,:] = t
+			test_id[k] = int(row['id'])
+			
+	return train_x, train_y, test_x, test_id
