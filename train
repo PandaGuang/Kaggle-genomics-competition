@@ -36,9 +36,10 @@ def train_neural_network(x):
 				print('Epoch', epoch, 'completed out of', hm_epochs, 'cost:', last_cost)
 				
 			# print accuracy
-			correct = tf.equal(sigmoid(prediction), y)
-			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-			print('Accuracy:', accuracy.eval({x:test_x, y:test_y}))
+			if (epoch % (hm_epochs/100)) == 0:
+			    correct = tf.equal(sigmoid(prediction), y)
+				accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
+				print('Accuracy:', accuracy.eval({x:test_x, y:test_y}))
 			
 			# evaluation: early stop
 			
