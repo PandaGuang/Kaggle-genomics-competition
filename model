@@ -1,3 +1,8 @@
+from getdataset import get_dataset
+import tensorflow as tf
+import numpy as np
+import random
+
 train_x, train_y, test_x, test_id = get_dataset()
 
 
