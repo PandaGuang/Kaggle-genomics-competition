@@ -15,6 +15,8 @@ n_classes = 1
 # iterations and batch_size
 hm_epochs = 1000
 batch_size = 100
+# validation size
+val_size = 400
 
 x = tf.placeholder('float')
 y = tf.placeholder('float')
