@@ -1,0 +1,50 @@
+train_x, train_y, test_x, test_y = get_dataset()
+#看19行train_x的行是feature
+
+# layers and their nodes
+n_nodes_hl1 = 15
+n_nodes_hl2 = 15
+
+# classes in output
+n_classes = 2
+# iterations and batch_size
+epoch = 1000
+batch_size = 100
+
+x = tf.placeholder('float')
+y = tf.placeholder('float')
+
+# random weights and bias
+hidden_1_layer = {
+				  'f_fum':n_nodes_hl1,
+				  'weight':tf.Variable(tf.random_normal([len(train_x[0]),n_nodes_hl1])),
+				  'bias':tf.Variable(tf.random_normal([n_nodes_hl1]))
+				  }
+
+hidden_2_layer = {
+				  'f_fum':n_nodes_hl2,
+				  'weight':tf.Variable(tf.random_normal([n_nodes_hl1,n_nodes_hl2])),
+				  'bias':tf.Variable(tf.random_normal([n_nodes_hl2]))
+				  }
+
+output_layer = {
+ 				'f_fum':None,
+				'weight':tf.Variable(tf.random_normal([n_nodes_hl2, n_classes])),
+				'bias':tf.Variable(tf.random_normal([n_classes]))
+				}
+				
+# model
+def neural_network_model(data):
+	
+	# hidden layer 1: data * W + b
+	l1 = tf.add(tf.matmul(data, hidden_1_layer['weight']), hidden_1_layer['bias'])
+	l1 = tf.nn.relu(l1)
+	
+	# hidden layer 2: hidden_1_layer * W + b
+	l2 = tf.add(tf.matmul(l1, hidden_2_layer['weight']), hidden_2_layer['bias'])
+	l2 = tf.nn.relu(l2)
+	
+	3 output layer: hidden_2_layer * W + b
+	output = tf.matmul(l2, output_layer['weight']) + output_layer['bias']
+	
+	return output
