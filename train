@@ -1,0 +1,52 @@
+# train model
+
+def train_neural_network(x):
+	# use model defined in model.py
+	prediction = neural_network_model(x)
+	
+	# cost function
+	cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(prediction,y))
+	
+	#optimize
+	optimizer = tf.train.GradientDescentoptimizer(1).minimize(cost)
+	
+	# tensorflow session
+	with tf.Session() as sess:
+		# initialize Variables
+		sess.run(tf.global_variables_initializer())
+		
+		# loop through specified number of iterations
+		for epoch in range(hm_epochs):
+			epoch_loss = 0
+			i = 0
+			# handle batch sized chunks of training data
+			while i < len(train_x):
+				start = i
+				end = i + batch_size
+				batch_x = np.array(train_x[start:end])
+				batch_y = np.array(train_y[start:end])
+				
+				_, c = sess.run([optimizer, cost], feed_dict = {x: batch_x, y: batch_y})
+				epoch_loss += c
+				i += batch_size
+				last_cost = c
+				
+			# print cost updates
+			if (epoch % (hm_epochs/10)) == 0:
+				print('Epoch', epoch, 'completed out of', hm_epochs, 'cost:', last_cost)
+				
+			# print accuracy
+			correct = tf.equal(sigmoid(prediction), y)
+			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
+			print('Accuracy:', accuracy.eval({x:test_x, y:test_y}))
+			
+			# evaluation: early stop
+			
+		
+		
+																
+																
+																
+																
+				
+			
