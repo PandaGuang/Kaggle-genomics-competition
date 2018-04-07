@@ -1,5 +1,5 @@
 train_x, train_y, test_x, test_y = get_dataset()
-#看19行train_x的行是feature
+
 
 # layers and their nodes
 n_nodes_hl1 = 10
