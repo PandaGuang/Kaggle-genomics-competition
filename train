@@ -1,5 +1,5 @@
 # train model
-from model import neural_network_model, batch_size, val_size, train_x, train_y, test_x, test_id
+from model import neural_network_model, batch_size, val_size, train_x, train_y, test_x, test_id, x, y
 import tensorflow as tf
 import numpy as np
 
