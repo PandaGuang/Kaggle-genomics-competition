@@ -2,13 +2,13 @@ train_x, train_y, test_x, test_y = get_dataset()
 #看19行train_x的行是feature
 
 # layers and their nodes
-n_nodes_hl1 = 15
-n_nodes_hl2 = 15
+n_nodes_hl1 = 10
+n_nodes_hl2 = 10
 
 # classes in output
-n_classes = 2
+n_classes = 1
 # iterations and batch_size
-epoch = 1000
+hm_epochs = 1000
 batch_size = 100
 
 x = tf.placeholder('float')
