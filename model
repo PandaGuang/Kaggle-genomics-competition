@@ -1,4 +1,4 @@
-train_x, train_y, test_x, test_y = get_dataset()
+train_x, train_y, test_x, test_id = get_dataset()
 
 
 # layers and their nodes
