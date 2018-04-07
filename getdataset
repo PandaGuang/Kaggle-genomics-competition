@@ -1,4 +1,4 @@
-# get dataset
+# get dataset csv
 import csv
 import numpy as np
 
