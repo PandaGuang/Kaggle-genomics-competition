@@ -1,0 +1,141 @@
+import tensorflow as tf
+import numpy as np
+import csv
+
+def get_dataset():
+
+	
+    A = {
+        'A':[1,0,0,0],
+        'G':[0,1,0,0],
+        'C':[0,0,1,0],
+        'T':[0,0,0,1],
+        }
+
+    with open('train.csv') as csvfile:
+        datareader = csv.DictReader(csvfile)
+        train_x = np.zeros((2000,14,4))
+        train_y = np.zeros((2000,2,4))
+        k=-1
+        for row in datareader:
+            k=k+1
+            temp = row['sequence']
+            k0=-1
+            for item in temp:
+                k0+=1
+                train_x[k,k0,:] = A[item]
+            train_y[k,0,0] = int(row['label'])
+
+    
+    
+
+    j=-1
+    for it in train_y[:,0,0]:
+        j = j + 1
+        train_y[j,1,0] = not it
+
+    for j in range(3):
+        train_y[:,:,j+1] = train_y[:,:,0]
+            
+       
+    with open('test.csv') as csvfile:
+        datareader = csv.DictReader(csvfile)
+        test_x = np.zeros((400,14,4))
+        test_id = np.zeros(400)
+        k=-1
+        for row in datareader:
+            k=k+1
+            temp = row['sequence']
+            k0=-1
+            for item in temp:
+                k0+=1
+                test_x[k,k0,:] = A[item]
+            test_id[k] = int(row['id'])
+                    
+    return train_x, train_y, test_x, test_id
+train_x, train_y, test_x, test_id = get_dataset()
+train_xy = np.zeros((train_x.shape[0], train_x.shape[1]+train_y.shape[1], train_y.shape[2]))
+train_xy[:,:train_x.shape[1],:]=train_x
+train_xy[:,train_x.shape[1]:,:]=train_y
+np.random.shuffle(train_xy)
+col_x = train_x.shape[1]
+train_size = 1600
+val_x = train_xy[train_size:,:col_x,:]
+val_y = train_xy[train_size:,col_x:,0]
+train_xy = train_xy[:train_size,:,:]
+batch_size = 1600
+
+lr = 0.01
+input_size = 1
+timestep_size = 14
+hidden_size = 20
+layer_num = 2
+class_num = 2
+hm_epochs = 20000
+
+x = tf.placeholder(tf.float32, [None, 14, 4])
+y= tf.placeholder(tf.float32, [None, class_num])
+
+
+
+##def get_a_cell():
+##    return tf.contrib.rnn.BasicLSTMCell(num_units=hidden_size, forget_bias = 1.0,
+##                                        input_size=1)
+def unit_lstm():
+    lstm_cell = tf.contrib.rnn.BasicLSTMCell(num_units=hidden_size, forget_bias=1.0,
+                                         state_is_tuple=True)
+    return lstm_cell
+
+multi_lstm_cell = tf.contrib.rnn.MultiRNNCell([unit_lstm() for it in range(layer_num)], state_is_tuple=True)
+
+init_state = multi_lstm_cell.zero_state(batch_size, dtype=tf.float32)
+
+outputs, state = tf.nn.dynamic_rnn(multi_lstm_cell, inputs=x, initial_state=init_state,
+                                   time_major=False)
+h_state = outputs[:, -1, :]
+
+
+W = tf.Variable(tf.truncated_normal([hidden_size, class_num], stddev=0.1),dtype=tf.float32)
+bias = tf.Variable(tf.constant(0.1,shape=[class_num]), dtype=tf.float32)
+y_pre = tf.nn.softmax(tf.matmul(h_state, W) + bias)
+
+
+# loss
+cross_entropy = -tf.reduce_mean(y*tf.log(y_pre))
+optimizer = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
+
+correct_pred = tf.equal(tf.argmax(y_pre, 1), tf.argmax(y, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_pred, 'float'))
+
+with tf.Session() as sess:
+    
+    sess.run(tf.global_variables_initializer())
+
+
+    for epoch in range(hm_epochs):
+        i = 0
+
+        if epoch % 50 == 0:
+            np.random.shuffle(train_xy)
+            train_x = train_xy[:, :col_x,:]
+            train_y = train_xy[:, col_x:,0]
+
+        # batch
+        while i < len(train_x):
+            start = i
+            end = i + batch_size
+            batch_x = np.array(train_x[start:end])
+            batch_y = np.array(train_y[start:end])
+
+            _, c = sess.run([optimizer, cross_entropy], feed_dict = {x: batch_x,
+                                                                     y: batch_y})
+            last_cost = c
+            i += batch_size
+
+
+        if (epoch % (hm_epochs/50)) == 0:
+            print('Epoch', epoch, 'completed out of', hm_epochs, 'cost:', last_cost)
+
+##        if (epoch % (hm_epochs/100)) == 0:
+##            print('Accuracy:', accuracy.eval({x:val_x, y:val_y}))
+        
