@@ -63,19 +63,18 @@ train_size = 1600
 val_x = train_xy[train_size:,:col_x,:]
 val_y = train_xy[train_size:,col_x:,0]
 train_xy = train_xy[:train_size,:,:]
-batch_size = 1600
+batch_size =   400
 
-lr = 0.01
+lr = 0.0001
 input_size = 1
 timestep_size = 14
-hidden_size = 20
+hidden_size = 30
 layer_num = 2
 class_num = 2
-hm_epochs = 20000
+hm_epochs = 55
 
-x = tf.placeholder(tf.float32, [None, 14, 4])
-y= tf.placeholder(tf.float32, [None, class_num])
-
+x = tf.placeholder(tf.float32, [None,14,4])
+y = tf.placeholder(tf.float32,[None,2])
 
 
 ##def get_a_cell():
@@ -104,8 +103,7 @@ y_pre = tf.nn.softmax(tf.matmul(h_state, W) + bias)
 cross_entropy = -tf.reduce_mean(y*tf.log(y_pre))
 optimizer = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 
-correct_pred = tf.equal(tf.argmax(y_pre, 1), tf.argmax(y, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_pred, 'float'))
+
 
 with tf.Session() as sess:
     
@@ -115,11 +113,11 @@ with tf.Session() as sess:
     for epoch in range(hm_epochs):
         i = 0
 
-        if epoch % 50 == 0:
+        if epoch % 10 == 0:
             np.random.shuffle(train_xy)
             train_x = train_xy[:, :col_x,:]
             train_y = train_xy[:, col_x:,0]
-
+           
         # batch
         while i < len(train_x):
             start = i
@@ -133,9 +131,27 @@ with tf.Session() as sess:
             i += batch_size
 
 
-        if (epoch % (hm_epochs/50)) == 0:
-            print('Epoch', epoch, 'completed out of', hm_epochs, 'cost:', last_cost)
-
-##        if (epoch % (hm_epochs/100)) == 0:
-##            print('Accuracy:', accuracy.eval({x:val_x, y:val_y}))
+##        if (epoch % (hm_epochs/16)) == 0:
+        correct_pred = tf.equal(tf.argmax(y_pre, 1), tf.argmax(y, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, 'float'))
+        print('Epoch', epoch, 'completed out of', hm_epochs, 'cost:', last_cost)
+        print('Accuracy',accuracy.eval({x:batch_x, y:batch_y}))
+##
+##        if (epoch % (hm_epochs/16)) == 0:
         
+        correct_pred = tf.equal(tf.argmax(y_pre, 1), tf.argmax(y, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, 'float'))
+        print('Accuracy:', accuracy.eval({x:val_x, y:val_y}))
+
+    prediction_softmax = y_pre.eval(feed_dict = {x: test_x})
+    prediction_softmax[prediction_softmax>0.5]=1
+    prediction_softmax[prediction_softmax<=0.5]=0
+    pred_binary = prediction_softmax[:,0]
+
+pred_frame = np.zeros((pred_binary.shape[0],2))
+pred_frame[:,0]=test_id
+pred_frame[:,1]=pred_binary
+import pandas as pd
+data_df = pd.DataFrame(pred_frame,columns=['id','prediction'])
+data_df.to_csv('my1.csv')
+
